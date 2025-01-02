@@ -1,19 +1,17 @@
 import { Router } from "express";
+import { Server as SocketIOServer } from "socket.io";
+import webhookRoutes from "./webhook";
 
-const router = Router();
+const routes = (io: SocketIOServer): Router => {
+  const router = Router();
 
-router.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+  router.use("/webhook", webhookRoutes(io));
 
-// router.post("/webhook", (req, res) => {
-//   console.log(
-//     `New alert received at, ${new Date().toISOString()}:\n`,
-//     req.body
-//   );
-//   const { ticker, price, alert_name, trigger_time } = req.body;
+  router.get("/", (req, res) => {
+    res.send("API is running");
+  });
 
-//   res.status(200).json({ message: "Webhook received successfully" });
-// });
+  return router;
+};
 
-export default router;
+export default routes;
