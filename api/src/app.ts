@@ -22,6 +22,15 @@ io.on("connection", (socket) => {
   console.log("Client connected to socket:", socket.id);
 });
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${NODE_ENV} mode.`);
 });
