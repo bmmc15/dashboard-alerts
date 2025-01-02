@@ -10,13 +10,7 @@ const server = createServer(app);
 
 const { NODE_ENV, SERVER_PORT, FRONT_END_DEV_URL } = process.env;
 
-const io = new SocketIOServer(server, {
-  cors: {
-    origin: FRONT_END_DEV_URL,
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
+const io = new SocketIOServer(server);
 
 const PORT = SERVER_PORT || 3000;
 
