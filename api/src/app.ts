@@ -10,7 +10,15 @@ const server = createServer(app);
 
 const { NODE_ENV, SERVER_PORT, FRONT_END_DEV_URL } = process.env;
 
-const io = new SocketIOServer(server);
+
+console.log("FRONT_END_DEV_URL: ", FRONT_END_DEV_URL)
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: FRONT_END_DEV_URL,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
 const PORT = SERVER_PORT || 3000;
 
@@ -20,15 +28,6 @@ app.use("/api", routes(io));
 
 io.on("connection", (socket) => {
   console.log("Client connected to socket:", socket.id);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
 });
 
 server.listen(PORT, () => {
