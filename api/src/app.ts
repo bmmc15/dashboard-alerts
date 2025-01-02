@@ -35,7 +35,7 @@ const io = new SocketIOServer(server, {
   },
 });
 
-const PORT = SERVER_PORT || 80;
+const PORT = 8080;
 
 app.use(express.json());
 
