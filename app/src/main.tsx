@@ -1,17 +1,12 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import dotenv from 'dotenv';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
 
-dotenv.config();
+import Alerts from "./components/Alerts.tsx";
 
-
-// import App from './App.tsx'
-import Alerts from './components/Alerts.tsx'
-
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     {/* <App /> */}
-    <Alerts/>
-  </StrictMode>,
-)
+    <Alerts />
+  </StrictMode>
+);

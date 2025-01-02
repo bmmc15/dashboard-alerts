@@ -23,7 +23,7 @@ const Alerts = () => {
 
   return (
     <div>
-      <h1>Alertas 1111</h1>
+      <h1>Alertas 1111 backend:{VITE_SOCKET_URL}</h1>
       {alerts.map((alert, index) => (
         <div key={index}>
           <h2>{alert.alert_name}</h2>

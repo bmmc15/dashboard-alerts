@@ -9,16 +9,13 @@ const app = express();
 const server = createServer(app);
 
 const { NODE_ENV, SERVER_PORT, FRONT_END_DEV_URL } = process.env;
-const isDev = NODE_ENV !== "production";
 
 const io = new SocketIOServer(server, {
-  cors: isDev
-    ? {
-        origin: FRONT_END_DEV_URL,
-        methods: ["GET", "POST"],
-        credentials: true,
-      }
-    : undefined,
+  cors: {
+    origin: FRONT_END_DEV_URL,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
 });
 
 const PORT = SERVER_PORT || 3000;
