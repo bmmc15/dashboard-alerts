@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
 const socket = io("http://localhost:3000"); // Altere para o endereço do backend
@@ -11,7 +11,7 @@ const Alerts = () => {
   useEffect(() => {
     // Escutar por novos alertas
     socket.on("alert", (data) => {
-      console.log("New ALERT")
+      console.log("New ALERT");
       setAlerts((prev) => [...prev, data]);
     });
 
