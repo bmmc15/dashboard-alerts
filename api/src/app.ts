@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
-import { Server as SocketIOServer } from "socket.io";
+import { Server as SocketIOServer, Socket } from "socket.io";
 
 import routes from "./routes";
 
@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 
 app.use("/api", routes(io));
 
-io.on("connection", (socket) => {
+io.on("connection", (socket: Socket) => {
   console.log("Client connected to socket:", socket.id);
 });
 
