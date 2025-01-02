@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3000"); // Altere para o endereço do backend
+const { VITE_SOCKET_URL } = import.meta.env;
+console.log("Connecting to: ", VITE_SOCKET_URL);
+const socket = io(VITE_SOCKET_URL);
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState<
@@ -9,13 +11,11 @@ const Alerts = () => {
   >([]);
 
   useEffect(() => {
-    // Escutar por novos alertas
     socket.on("alert", (data) => {
       console.log("New ALERT");
       setAlerts((prev) => [...prev, data]);
     });
 
-    // Limpar o evento quando o componente desmontar
     return () => {
       socket.off("alert");
     };
