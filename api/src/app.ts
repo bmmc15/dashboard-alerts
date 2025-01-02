@@ -20,9 +20,14 @@ const io = new SocketIOServer(server, {
   },
 });
 
-const PORT = SERVER_PORT || 3000;
+const PORT = SERVER_PORT || 80;
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log(`${req.method} request to ${req.url}`);
+  next();
+});
 
 app.use("/api", routes(io));
 
