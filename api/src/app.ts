@@ -1,17 +1,32 @@
 import "dotenv/config";
-import express from "express";
+import express, { Request, Response } from "express";
 import { createServer } from "http";
 import { Server as SocketIOServer, Socket } from "socket.io";
 
 import routes from "./routes";
 
 const app = express();
+
+app.get("/", (req: Request, res: Response) => {
+  res.send("Hello, world!");
+});
+
+// Capturando exceções não tratadas
+process.on("uncaughtException", (err: Error) => {
+  console.error("Uncaught Exception:", err);
+  process.exit(1); // Opcional: sai do processo após uma exceção não tratada
+});
+
+// Capturando promessas rejeitadas não tratadas
+process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
+  console.error("Unhandled Rejection:", reason);
+  process.exit(1); // Opcional: sai do processo após uma rejeição não tratada
+});
 const server = createServer(app);
 
 const { NODE_ENV, SERVER_PORT, FRONT_END_DEV_URL } = process.env;
 
-
-console.log("FRONT_END_DEV_URL: ", FRONT_END_DEV_URL)
+console.log("FRONT_END_DEV_URL: ", FRONT_END_DEV_URL);
 const io = new SocketIOServer(server, {
   cors: {
     origin: FRONT_END_DEV_URL,
