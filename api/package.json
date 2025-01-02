@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "install:prod": "npm install --omit=dev",
-    "install:dev": "npm install",
-    "build": "npm run install:prod && tsc -b",
+    "build": "tsc -b",
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
     "clean": "rm -rf dist"
