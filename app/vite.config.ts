@@ -1,14 +1,28 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import { config } from "dotenv";
+import react from '@vitejs/plugin-react';
+import tailwindcss from 'tailwindcss';
+import { defineConfig } from 'vite';
+import eslint from 'vite-plugin-eslint';
 
-// Load environment variables from .env file
-config();
+import { resolve } from 'path';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  define: {
-    "process.env": process.env,
+  plugins: [react(), eslint()],
+  server: {
+    port: 5173,
+    open: true,
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@components': resolve(__dirname, 'src/components'),
+      '@services': resolve(__dirname, 'src/services'),
+      '@utils': resolve(__dirname, 'src/utils'),
+      '@views': resolve(__dirname, 'src/views'),
+    },
+  },
+  css: {
+    postcss: {
+      plugins: [tailwindcss()],
+    },
   },
 });

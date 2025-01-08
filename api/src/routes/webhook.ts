@@ -8,8 +8,9 @@ const webhookRoutes = (io: SocketIOServer): Router => {
     const { alert_name } = req.body;
 
     io.emit("alert", {
-      alertName: alert_name,
-      timestamp: new Date().toISOString(),
+      // alertName: alert_name,
+      // timestamp: new Date().toISOString(),
+      ...req.body
     });
 
     res.status(200).json({ message: "Webhook processed successfully" });
