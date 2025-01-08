@@ -1,17 +1,10 @@
+import { memo, useState, useEffect } from "react";
 import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { generateDashboardHeaders } from "../utils/customTable.utils";
 
-export interface RowData {
-  key: string;
-  instrument: string;
-  timeframe: string;
-  [indicator: string]: string;
-}
-
-const tickers = ["BTC", "SOL", "ETH"];
-const timeframes = ["15 minute", "1 hour", "4 hour", "1 day", "1 week"];
-const indicators = [
+const TICKERS = ["BTC", "SOL", "ETH"];
+const TIMEFRAMES = ["15m", "1h", "4h", "1d", "1w"];
+const INDICATORS = [
   "ZeroLag",
   "Pivot Trends",
   "X48",
@@ -20,45 +13,140 @@ const indicators = [
   "SMA Cross",
 ];
 
-const columns: ColumnsType<RowData> = [
-  {
-    title: "Instrument",
-    dataIndex: "instrument",
-    key: "instrument",
-    render: (text, _record, index) => ({
-      children:
-        index % timeframes.length === 0 ? <strong>{text}</strong> : null,
-      props: {
-        rowSpan: index % timeframes.length === 0 ? timeframes.length : 0, // Merge cells for the instrument column
-      },
-    }),
-  },
-  {
-    title: "Timeframe",
-    dataIndex: "timeframe",
-    key: "timeframe",
-  },
-];
+interface Signal {
+  ticker: string;
+  timeframe: string;
+  indicator: string;
+  signal: "BUY" | "SELL";
+}
 
-indicators.map((elem) => {
-  const indicatorCamelCase = elem.toLowerCase().replace(/ /g, "");
-  return columns.push({
-    title: elem,
-    dataIndex: indicatorCamelCase,
-    key: indicatorCamelCase,
-    render: (text) =>
-      text ? <Tag color={text === "SELL" ? "red" : "green"}>{text}</Tag> : null,
-  });
-});
+interface RowData {
+  key: string;
+  ticker: string;
+  timeframe: string;
+}
 
-const data = generateDashboardHeaders(tickers, timeframes, indicators);
+import { io } from "socket.io-client";
 
-const CustomTable = () => {
+const { VITE_SOCKET_URL } = import.meta.env;
+console.log("Connecting to: ", VITE_SOCKET_URL);
+const socket = io(VITE_SOCKET_URL);
+
+const SignalCell = memo(
+  ({
+    ticker,
+    timeframe,
+    indicator,
+    signals,
+  }: {
+    ticker: string;
+    timeframe: string;
+    indicator: string;
+    signals: Record<string, Signal>;
+  }) => {
+    const key = `${ticker}-${timeframe}-${indicator}`;
+    const signal = signals[key];
+
+    return signal ? (
+      <Tag color={signal.signal === "SELL" ? "red" : "green"}>
+        {signal.signal}
+      </Tag>
+    ) : null;
+  }
+);
+
+const TradingDashboard = () => {
+  const [signals, setSignals] = useState<Record<string, Signal>>({});
+
+  useEffect(() => {
+    socket.on("alert", (data) => {
+      console.log("New signal received:", data);
+
+      const tranformedSignal: Signal = {
+        ticker: data?.ticker?.slice(0, 3),
+        timeframe: data?.timeframe,
+        indicator: data?.indicator,
+        signal: data?.message?.toLowerCase().includes("sell") ? "SELL" : "BUY",
+      };
+
+      console.log("Transformed signal:", tranformedSignal);
+
+      setSignals((prev) => ({
+        ...prev,
+        [`${tranformedSignal.ticker}-${tranformedSignal.timeframe}-${tranformedSignal.indicator}`]:
+          tranformedSignal,
+      }));
+    });
+
+    return () => {
+      socket.off("alert");
+    };
+  }, []);
+
+  //   // Demo signals after 5 seconds
+  //   const timer = setTimeout(() => {
+  //     // First signal
+  //     handleSignal({
+  //       ticker: "BTC",
+  //       timeframe: "15m",
+  //       indicator: "SMA Cross",
+  //       signal: "BUY",
+  //     });
+
+  //     // Second signal
+  //     handleSignal({
+  //       ticker: "ETH",
+  //       timeframe: "4h",
+  //       indicator: "IA Confluence",
+  //       signal: "SELL",
+  //     });
+  //   }, 5000);
+
+  //   return () => clearTimeout(timer);
+  // }, []);
+
+  const columns: ColumnsType<RowData> = [
+    {
+      title: "Ticker",
+      dataIndex: "ticker",
+      key: "ticker",
+      onCell: (_, index) => ({
+        rowSpan: index! % TIMEFRAMES.length === 0 ? TIMEFRAMES.length : 0,
+        children: <span className="font-semibold">{_?.ticker}</span>,
+      }),
+    },
+    {
+      title: "Timeframe",
+      dataIndex: "timeframe",
+      key: "timeframe",
+    },
+    ...INDICATORS.map((indicator) => ({
+      title: indicator,
+      key: indicator,
+      render: (_, record) => (
+        <SignalCell
+          ticker={record.ticker}
+          timeframe={record.timeframe}
+          indicator={indicator}
+          signals={signals}
+        />
+      ),
+    })),
+  ];
+
+  const data: RowData[] = TICKERS.flatMap((ticker) =>
+    TIMEFRAMES.map((timeframe) => ({
+      key: `${ticker}-${timeframe}`,
+      ticker,
+      timeframe,
+    }))
+  );
+
   return (
-    <div className="container bg-white shadow-md p-8">
-      <Table<RowData> columns={columns} dataSource={data} pagination={false} />
+    <div className="container p-8">
+      <Table columns={columns} dataSource={data} pagination={false} bordered />
     </div>
   );
 };
 
-export default CustomTable;
+export default TradingDashboard;
