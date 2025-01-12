@@ -27,6 +27,7 @@ interface RowData {
 }
 
 import { io } from "socket.io-client";
+import AlertLog from "./AlertLog";
 
 const { VITE_SOCKET_URL } = import.meta.env;
 console.log("Connecting to: ", VITE_SOCKET_URL);
@@ -145,6 +146,7 @@ const TradingDashboard = () => {
   return (
     <div className="container p-8">
       <Table columns={columns} dataSource={data} pagination={false} bordered />
+      <AlertLog></AlertLog>
     </div>
   );
 };
