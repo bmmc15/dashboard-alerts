@@ -1,42 +1,44 @@
-import { Router, Request, Response } from "express";
-import { Server as SocketIOServer } from "socket.io";
+import { Router, Request, Response, RequestHandler } from "express";
+import { io } from "../app";
+import { AlertService } from "../services/AlertService";
 
-const webhookRoutes = (io: SocketIOServer): Router => {
-  const router = Router();
+const router = Router();
+const alertService = new AlertService();
 
-  router.post("/", (req: Request, res: Response) => {
-    console.log("Received Alert:", req.body);
+const handleWebhook: RequestHandler = async (req, res) => {
+  try {
+    let alert;
 
-    const alert: { message?: string } = {};
-    let payload;
-
-    if (req.is("text/*")) {
-      console.log("TEXT Headers:", req.headers);
-      console.log("TEXT Body:", req.body);
-      console.log("Text Alert received:", req.body);
-      alert.message = req.body;
-
-      payload = {
-        type: "text-alert",
-        content: alert.message,
-        timestamp: new Date().toISOString(),
-      };
-    } else {
-      console.log("JSON Headers:", req.headers);
-      console.log("JSON Body:", req.body);
-      payload = {
-        type: "json-alert",
-        content: req.body,
-        timestamp: new Date().toISOString(),
-      };
+    // Check if it's a legacy alert format
+    if (req.body.symbol && req.body.timeframe && req.body.indicator) {
+      alert = await alertService.processLegacyAlert(req.body);
+    }
+    // Check if it's a text alert
+    else if (typeof req.body === "string" || req.body.text) {
+      const alertText = typeof req.body === "string" ? req.body : req.body.text;
+      alert = await alertService.processTextAlert(alertText);
+    }
+    // Unknown format
+    else {
+      throw new Error("Invalid alert format");
     }
 
-    io.emit("alert", payload);
+    // Emit the standardized alert to all connected clients
+    io.emit("alert", alert);
 
-    res.status(200).json({ message: "Webhook processed successfully" });
-  });
-
-  return router;
+    res.json({
+      success: true,
+      alert,
+    });
+  } catch (error: unknown) {
+    console.error("Error processing alert:", error);
+    res.status(400).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 };
 
-export default webhookRoutes;
+router.post("/", handleWebhook);
+
+export default router;

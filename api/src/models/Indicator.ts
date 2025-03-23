@@ -15,6 +15,12 @@ export class Indicator {
   @Column({ nullable: true, type: "text" })
   description?: string;
 
+  @Column({ type: "text", nullable: true })
+  regex_pattern: string;
+
+  @Column({ type: "text", nullable: true })
+  example_alert: string;
+
   @OneToMany(() => Alert, (alert) => alert.indicator)
   alerts: Alert[];
 }
