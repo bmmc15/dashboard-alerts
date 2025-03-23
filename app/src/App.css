@@ -1,42 +1,87 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+@keyframes signal-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
   }
-  to {
-    transform: rotate(360deg);
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.animate-signal-pulse {
+  animation: signal-pulse 1s ease-in-out;
 }
 
-.card {
-  padding: 2em;
+/* Custom scrollbar for alerts container */
+.alerts-container::-webkit-scrollbar {
+  width: 8px;
 }
 
-.read-the-docs {
-  color: #888;
+.alerts-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.alerts-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 4px;
+}
+
+.alerts-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.5);
+}
+
+/* Dark mode scrollbar */
+.dark .alerts-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.2);
+}
+
+.dark .alerts-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.3);
+}
+
+/* Custom styling for the table */
+.custom-table .ant-table {
+  background: transparent;
+}
+
+.custom-table .ant-table-thead > tr > th {
+  background: transparent;
+  color: inherit;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+  padding: 8px 16px;
+}
+
+.dark .custom-table .ant-table-thead > tr > th {
+  border-bottom: 1px solid rgba(75, 85, 99, 0.5);
+}
+
+.custom-table .ant-table-tbody > tr > td {
+  border-bottom: none;
+  padding: 8px 16px;
+}
+
+.dark .custom-table {
+  --tw-text-opacity: 1;
+  color: rgba(209, 213, 219, var(--tw-text-opacity));
+}
+
+.custom-table .ant-table-cell {
+  background: transparent !important;
+}
+
+.dark .custom-table .ant-table-tbody > tr:hover > td {
+  background: rgba(55, 65, 81, 0.3) !important;
+}
+
+.custom-table .ant-table-tbody > tr:hover > td {
+  background: rgba(243, 244, 246, 0.5) !important;
 }
