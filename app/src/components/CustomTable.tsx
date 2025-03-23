@@ -1,10 +1,26 @@
 import { memo, useState, useEffect, useCallback } from "react";
-import { Table } from "antd";
+import { Table, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { AlertData, Signal, RowData } from "../types/alert";
 import { useSocket } from "../context/SocketContext";
 
-const ALL_TICKERS = ["BTC", "SOL", "ETH", "LINK", "ADA", "DOT", "AVAX", "MATIC", "XRP", "DOGE", "BNB", "ATOM", "UNI", "AAVE", "SNX"];
+const ALL_TICKERS = [
+  "BTC",
+  "SOL",
+  "ETH",
+  "LINK",
+  "ADA",
+  "DOT",
+  "AVAX",
+  "MATIC",
+  "XRP",
+  "DOGE",
+  "BNB",
+  "ATOM",
+  "UNI",
+  "AAVE",
+  "SNX",
+];
 const TIMEFRAMES = ["15m", "1h", "4h", "1d"];
 const INDICATORS = ["ZeroLag", "Pivot", "X48", "IA", "SMA"];
 
@@ -41,8 +57,11 @@ const SignalCell = memo(
 
       const updateProgress = () => {
         const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, (SIGNAL_EXPIRY_TIME - elapsed) / SIGNAL_EXPIRY_TIME * 100);
-        
+        const remaining = Math.max(
+          0,
+          ((SIGNAL_EXPIRY_TIME - elapsed) / SIGNAL_EXPIRY_TIME) * 100
+        );
+
         if (remaining <= 0) {
           onExpiry(key);
         } else {
@@ -69,31 +88,75 @@ const SignalCell = memo(
       <div
         className={`
           signal-cell
-          ${isSell ? 'sell' : 'buy'}
-          ${isNew ? 'animate-signal-pulse' : ''}
+          ${isSell ? "sell" : "buy"}
+          ${isNew ? "animate-signal-pulse" : ""}
         `}
       >
-        {isSell ? 'Sell' : 'Buy'}
-        <div
-          className="progress-bar"
-          style={{ width: `${progress}%` }}
-        />
+        {isSell ? "Sell" : "Buy"}
+        <div className="progress-bar" style={{ width: `${progress}%` }} />
       </div>
     );
   }
 );
 
+const GroupTitle = ({ groupNumber }: { groupNumber: number }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(`Group ${groupNumber + 1}`);
+
+  const handleDoubleClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setIsEditing(false);
+    }
+    if (e.key === "Escape") {
+      setTitle(`Group ${groupNumber + 1}`);
+      setIsEditing(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <Input
+        autoFocus
+        size="small"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className="w-40 text-sm font-medium text-gray-700 dark:text-gray-300"
+      />
+    );
+  }
+
+  return (
+    <h3
+      onDoubleClick={handleDoubleClick}
+      className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer hover:text-gray-900 dark:hover:text-gray-100"
+      title="Double click to edit"
+    >
+      {title}
+    </h3>
+  );
+};
+
 const CustomTable = ({ tickerGroup }: Props) => {
   const [signals, setSignals] = useState<Record<string, Signal>>({});
   const { socket, isConnected } = useSocket();
-  
+
   const groupTickers = ALL_TICKERS.slice(
-    tickerGroup * TICKERS_PER_GROUP, 
+    tickerGroup * TICKERS_PER_GROUP,
     (tickerGroup + 1) * TICKERS_PER_GROUP
   );
 
   const handleSignalExpiry = useCallback((key: string) => {
-    setSignals(prev => {
+    setSignals((prev) => {
       const newSignals = { ...prev };
       delete newSignals[key];
       return newSignals;
@@ -105,9 +168,9 @@ const CustomTable = ({ tickerGroup }: Props) => {
 
     const handleAlert = (data: AlertData) => {
       console.log("Received alert data:", data);
-      
-      const ticker = data.ticker.split('/')[0];
-      
+
+      const ticker = data.ticker.split("/")[0];
+
       if (!groupTickers.includes(ticker)) {
         console.log("Ticker not in this group:", ticker);
         return;
@@ -192,14 +255,12 @@ const CustomTable = ({ tickerGroup }: Props) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
       <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Group {tickerGroup + 1}
-        </h3>
+        <GroupTitle groupNumber={tickerGroup} />
       </div>
-      <Table 
-        columns={columns} 
-        dataSource={data} 
-        pagination={false} 
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={false}
         size="small"
         className="custom-table"
       />
