@@ -19,7 +19,13 @@ function App() {
                 <CustomTable tickerGroup={1} />
                 <CustomTable tickerGroup={2} />
               </div>
-              <AlertLog />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <AlertLog title="Recent Alerts" type="recent" />
+                <AlertLog
+                  title="Dashboard Alert History - 3 for 1 indicator"
+                  type="history"
+                />
+              </div>
             </main>
           </div>
         </SoundProvider>

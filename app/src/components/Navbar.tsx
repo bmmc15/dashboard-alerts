@@ -3,6 +3,7 @@ import { useDarkMode } from "../context/DarkModeContext";
 import SettingsModal from "./SettingsModal";
 import { useSocket } from "../context/SocketContext";
 import { ImBug } from "react-icons/im";
+import { SiTradingview } from "react-icons/si";
 
 const Navbar = () => {
   const { isDark, toggleDarkMode } = useDarkMode();
@@ -12,6 +13,7 @@ const Navbar = () => {
   const handleDebug = () => {
     if (!socket) return;
 
+    // Common data arrays
     const timeframes = ["15m", "1h", "4h", "1d"];
     const tickers = [
       "BTC",
@@ -33,8 +35,8 @@ const Navbar = () => {
     const indicators = ["ZeroLag", "Pivot", "X48", "IA", "SMA"];
     const actions = ["BUY", "SELL"];
 
-    // Generate 15+ random alerts
-    for (let i = 0; i < 15; i++) {
+    // Generate recent alerts (standard signals)
+    for (let i = 0; i < 8; i++) {
       const ticker = tickers[Math.floor(Math.random() * tickers.length)];
       const timeframe =
         timeframes[Math.floor(Math.random() * timeframes.length)];
@@ -44,16 +46,49 @@ const Navbar = () => {
       const price = (Math.random() * 1000).toFixed(2);
 
       const mockAlert = {
-        ticker: `${ticker}/USDT`, // Adding /USDT to match expected format
+        ticker: `${ticker}/USDT`,
         timeframe,
         indicator,
         message: `${action} SIGNAL`,
         price,
         trigger_time: new Date().toISOString(),
         alert_name: `${indicator} ${action} Alert`,
+        type: "recent",
       };
 
       socket.emit("test-alert", mockAlert);
+    }
+
+    // Generate history alerts (3 for 1 indicator signals)
+    // These will have more concentrated signals (3 indicators showing same direction)
+    for (let i = 0; i < 8; i++) {
+      const ticker = tickers[Math.floor(Math.random() * tickers.length)];
+      const timeframe =
+        timeframes[Math.floor(Math.random() * timeframes.length)];
+      const action = actions[Math.floor(Math.random() * actions.length)];
+      const price = (Math.random() * 1000).toFixed(2);
+
+      // Pick 3 different indicators for the same signal
+      const shuffledIndicators = [...indicators].sort(
+        () => Math.random() - 0.5
+      );
+      const selectedIndicators = shuffledIndicators.slice(0, 3);
+
+      // Emit 3 alerts with different indicators but same direction
+      selectedIndicators.forEach((indicator) => {
+        const mockAlert = {
+          ticker: `${ticker}/USDT`,
+          timeframe,
+          indicator,
+          message: `${action} SIGNAL (3-1)`,
+          price,
+          trigger_time: new Date().toISOString(),
+          alert_name: `${indicator} ${action} Alert (3-1)`,
+          type: "history",
+        };
+
+        socket.emit("test-alert", mockAlert);
+      });
     }
   };
 
@@ -62,23 +97,10 @@ const Navbar = () => {
       <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-screen flex flex-wrap items-center justify-between mx-auto p-4">
           <div className="flex items-center space-x-3">
-            <svg
-              className="w-8 h-8 text-indigo-600"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M4 5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V5Z"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <path d="M4 8H20" stroke="currentColor" strokeWidth="2" />
-              <path d="M8 8V20" stroke="currentColor" strokeWidth="2" />
-            </svg>
             <span className="text-xl font-semibold text-gray-900 dark:text-white">
               Trading Alerts
             </span>
+            <SiTradingview size={30} />
           </div>
 
           <div className="flex items-center space-x-4">
