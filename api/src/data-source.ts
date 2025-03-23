@@ -4,6 +4,7 @@ import { Ticker, Indicator, Timeframe, Alert } from "./models";
 import { CreateInitialSchema1711213200000 } from "./migrations/1711213200000-CreateInitialSchema";
 import { AddTimeframeLegacyColumns1711213300000 } from "./migrations/1711213300000-AddTimeframeLegacyColumns";
 import { InsertTimeframeLegacyData1711213400000 } from "./migrations/1711213400000-InsertTimeframeLegacyData";
+import { InsertTickerLegacyData1711213500000 } from "./migrations/1711213500000-InsertTickerLegacyData";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -19,6 +20,7 @@ export const AppDataSource = new DataSource({
     CreateInitialSchema1711213200000,
     AddTimeframeLegacyColumns1711213300000,
     InsertTimeframeLegacyData1711213400000,
+    InsertTickerLegacyData1711213500000,
   ],
   subscribers: [],
 });
