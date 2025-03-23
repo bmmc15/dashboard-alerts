@@ -6,6 +6,7 @@ import { AddTimeframeLegacyColumns1711213300000 } from "./migrations/17112133000
 import { InsertTimeframeLegacyData1711213400000 } from "./migrations/1711213400000-InsertTimeframeLegacyData";
 import { InsertTickerLegacyData1711213500000 } from "./migrations/1711213500000-InsertTickerLegacyData";
 import { InsertIndicatorLegacyData1711213600000 } from "./migrations/1711213600000-InsertIndicatorLegacyData";
+import { AddRegexSupport1711213700000 } from "./migrations/1711213700000-AddRegexSupport";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -23,6 +24,7 @@ export const AppDataSource = new DataSource({
     InsertTimeframeLegacyData1711213400000,
     InsertTickerLegacyData1711213500000,
     InsertIndicatorLegacyData1711213600000,
+    AddRegexSupport1711213700000,
   ],
   subscribers: [],
 });
