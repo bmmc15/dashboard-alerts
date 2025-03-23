@@ -6,7 +6,11 @@
     "build": "tsc -b",
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:generate": "npm run typeorm migration:generate -- -d src/data-source.ts",
+    "migration:run": "npm run typeorm migration:run -- -d src/data-source.ts",
+    "migration:revert": "npm run typeorm migration:revert -- -d src/data-source.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +20,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "socket.io": "^4.8.1"
+    "pg": "^8.11.3",
+    "socket.io": "^4.8.1",
+    "typeorm": "^0.3.21"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
