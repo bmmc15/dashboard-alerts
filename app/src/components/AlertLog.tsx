@@ -1,34 +1,100 @@
-// src/components/AlertLog.tsx
 import React, { useEffect, useState, useRef } from "react";
-import io from "socket.io-client";
+import { AlertData } from "../types/alert";
+import { useSocket } from "../context/SocketContext";
+import { useSoundSettings } from "../context/SoundContext";
 
-interface AlertData {
-  ticker: string;
-  price: string;
-  alert_name: string;
-  trigger_time: string;
-  timeframe: string;
-  indicator: string;
-  message: string;
-}
+const AlertCard: React.FC<{ alert: AlertData }> = ({ alert }) => {
+  const isSell = alert.message.toUpperCase().includes('SELL');
+  const formattedTime = new Date(alert.trigger_time || '').toLocaleTimeString();
+  
+  return (
+    <div 
+      className={`
+        flex items-center space-x-4 p-3 rounded-lg 
+        ${isSell 
+          ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800' 
+          : 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
+        } 
+        border animate-signal-pulse
+      `}
+    >
+      <div 
+        className={`
+          flex-shrink-0 w-2 h-2 rounded-full
+          ${isSell ? 'bg-red-500' : 'bg-green-500'}
+        `} 
+      />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {alert.ticker} / {alert.timeframe}
+          </p>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {formattedTime}
+          </span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            {alert.indicator}
+          </span>
+          <span 
+            className={`text-xs font-semibold ${
+              isSell ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+            }`}
+          >
+            {alert.message}
+          </span>
+          {alert.price && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              @ {alert.price}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-const { VITE_SOCKET_URL } = import.meta.env;
-console.log("Connecting to: ", VITE_SOCKET_URL);
-const socket = io(VITE_SOCKET_URL);
+const ConnectionStatus: React.FC<{ isConnected: boolean }> = ({ isConnected }) => (
+  <div className={`px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between`}>
+    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      Recent Alerts
+    </h3>
+    <div className="flex items-center space-x-2">
+      <span
+        className={`w-2 h-2 rounded-full ${
+          isConnected ? 'bg-green-500' : 'bg-red-500'
+        }`}
+      />
+      <span className="text-xs text-gray-500 dark:text-gray-400">
+        {isConnected ? 'Connected' : 'Disconnected'}
+      </span>
+    </div>
+  </div>
+);
 
 const AlertLog: React.FC = () => {
   const [alerts, setAlerts] = useState<AlertData[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { socket, isConnected } = useSocket();
+  const { playSound } = useSoundSettings();
 
   useEffect(() => {
-    socket.on("alert", (data: AlertData) => {
-      setAlerts((prevAlerts) => [data, ...prevAlerts]);
-    });
+    if (!socket || !isConnected) return;
+
+    const handleAlert = (data: AlertData) => {
+      console.log("AlertLog received:", data);
+      setAlerts((prevAlerts) => [data, ...prevAlerts].slice(0, 50)); // Keep last 50 alerts
+      playSound(data.message.toUpperCase().includes('SELL') ? 'sell' : 'buy');
+    };
+
+    socket.on("alert", handleAlert);
+    console.log("Listening for alerts in AlertLog");
 
     return () => {
-      socket.off("alert");
+      socket.off("alert", handleAlert);
     };
-  }, []);
+  }, [socket, isConnected, playSound]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -37,34 +103,22 @@ const AlertLog: React.FC = () => {
   }, [alerts]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        height: "600px",
-        overflowY: "auto",
-        padding: "10px",
-        backgroundColor: "#f4f4f4",
-        borderRadius: "8px",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      {alerts.map((alert, index) => (
-        <div
-          key={index}
-          style={{
-            backgroundColor: "#fff",
-            padding: "15px",
-            marginBottom: "10px",
-            borderRadius: "6px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-            borderLeft: "4px solid #4CAF50",
-          }}
-        >
-          <pre style={{ margin: 0, fontFamily: "monospace" }}>
-            {JSON.stringify(alert, null, 2)}
-          </pre>
-        </div>
-      ))}
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+      <ConnectionStatus isConnected={isConnected} />
+      <div
+        ref={containerRef}
+        className="p-4 h-48 overflow-y-auto space-y-2 alerts-container"
+      >
+        {alerts.length === 0 ? (
+          <div className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+            {isConnected ? 'No alerts yet. Waiting for signals...' : 'Connecting to server...'}
+          </div>
+        ) : (
+          alerts.map((alert, index) => (
+            <AlertCard key={`${alert.ticker}-${alert.timeframe}-${index}`} alert={alert} />
+          ))
+        )}
+      </div>
     </div>
   );
 };
